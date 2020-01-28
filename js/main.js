@@ -1,27 +1,5 @@
-const CODE = {
-    success: 200,
-    failure: -1
-};
-
-const SERVER = 'http://localhost:9010';
-
-const GLOBAL = {
-    loginURL: SERVER + '/access/login',
-    socketURL: SERVER + '/nabootsocket'
-};
-
-const SUBSCRIBE = {
-    privateChannel: '/user/private/message',
-    groupChannel: '/user/group/message',
-    notifyChannel: '/user/notify'
-};
-
-const SEND = {
-    privateChannel: '/to/private/send',
-    groupChannel: '/to/group/send'
-};
-
-let stompClient = null;
+/*const SERVER = 'http://localhost:9010';*/
+const SERVER = 'http://35.243.101.217:9010';
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);
@@ -35,7 +13,30 @@ function setConnected(connected) {
 }
 
 function connect() {
-    const socket = new SockJS(GLOBAL.socketURL);
+    let loginParam = new NABootSocket.LoginParam($('#username').val(),$('#password').val())
+    let connectCallbacks = new NABootSocket.ConnectCallbacks({
+        onSuccess: function (data) {
+            $('#my-uuid').val(data.data.uuid);
+            setConnected(true);
+            console.log('Connected');
+        },
+        onFailure: function (data) {
+            alert(data.message);
+            disconnect();
+        },
+        onReceivedPrivate: function (message) {
+            showRecord(message)
+        },
+        onReceivedGroup: function (message) {
+            showRecord(message)
+        },
+        onReceivedNotify: function (message) {
+            showRecord(message)
+        }
+    })
+
+    NABootSocket.connect(loginParam,connectCallbacks)
+    /*const socket = new SockJS(GLOBAL.socketURL);
     stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function () {
@@ -104,33 +105,38 @@ function connect() {
 
         });
 
-    });
+    });*/
 }
 
 function disconnect() {
-    if (stompClient !== null) {
+    /*if (stompClient !== null) {
         stompClient.disconnect();
-    }
+    }*/
+    NABootSocket.disconnect()
     setConnected(false);
     console.log("Disconnected");
 }
 
 function sendPrivateMessage() {
-    const message = {
+    let message = new NABootSocket.Message($("#my-uuid").val(),$("#target-uuid").val(),$("#private-message").val())
+    NABootSocket.sendPrivateMessage(message)
+    /*const message = {
         sender: $("#my-uuid").val(),
         receiver: $("#target-uuid").val(),
         content: $("#private-message").val()
     };
-    stompClient.send(SEND.privateChannel, {}, JSON.stringify(message));
+    stompClient.send(SEND.privateChannel, {}, JSON.stringify(message));*/
 }
 
 function sendGroupMessage() {
-    const message = {
+    let message = new NABootSocket.Message($("#my-uuid").val(),$("#group-uuid").val(),$("#group-message").val())
+    NABootSocket.sendGroupMessage(message)
+    /*const message = {
         sender: $("#my-uuid").val(),
         receiver: $("#group-uuid").val(),
         content: $("#group-message").val()
     };
-    stompClient.send(SEND.groupChannel, {}, JSON.stringify(message));
+    stompClient.send(SEND.groupChannel, {}, JSON.stringify(message));*/
 }
 
 function showRecord(message) {

@@ -7,7 +7,9 @@
         failure: -1
     };
 
-    const SERVER = 'http://localhost:9010';
+    /*const SERVER = 'http://localhost:9010';*/
+    const SERVER = 'http://35.243.101.217:9010';
+
 
     const GLOBAL = {
         loginURL: SERVER + '/access/login',
@@ -36,13 +38,13 @@
     }
 
     let NABootSocket = {
-        Message: function (sender,receiver,content) {
-            this.sender = sender
-            this.receiver = receiver
-            this.content = content
+        Message: function (NA_sender,NA_receiver,NA_content) {
+            this.sender = NA_sender
+            this.receiver = NA_receiver
+            this.content = NA_content
         },
-        LoginParam: function(NA_username,NA_password,sessionId) {
-            this.sessionId = sessionId
+        LoginParam: function(NA_username,NA_password,NA_sessionId) {
+            this.sessionId = NA_sessionId
             this.authLogin = {
                 username: NA_username,
                 password: NA_password
@@ -56,11 +58,11 @@
                 this.onReceivedNotify = arguments[0].onReceivedNotify
         },
 
-        sendPrivateMessage: function (msg) {
-            stompClient.send(SEND.privateChannel, {}, JSON.stringify(msg));
+        sendPrivateMessage: function (NA_msg) {
+            stompClient.send(SEND.privateChannel, {}, JSON.stringify(NA_msg));
         },
-        sendGroupMessage: function (msg) {
-            stompClient.send(SEND.groupChannel, {}, JSON.stringify(msg));
+        sendGroupMessage: function (NA_msg) {
+            stompClient.send(SEND.groupChannel, {}, JSON.stringify(NA_msg));
         },
         disconnect: function () {
             if (stompClient !== null) {
@@ -91,44 +93,45 @@
                 xhr.send(JSON.stringify(loginParam))
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
-                        if(xhr.status == 200){
+                        if(xhr.status == 200) {
                             console.log(xhr.response)
-                            success(xhr.response)
-                            stompClient.subscribe(SUBSCRIBE.privateChannel, function (data) {
-                                data = JSON.parse(data.body);
-                                if (data.code === CODE.success) {
-                                    const message = data.data;
-                                    receivePrivate(message)
-                                } else {
-                                    alert(data.message)
-                                }
-                            });
+                            if (xhr.response.code === CODE.success) {
+                                success(xhr.response)
+                                stompClient.subscribe(SUBSCRIBE.privateChannel, function (data) {
+                                    data = JSON.parse(data.body);
+                                    if (data.code === CODE.success) {
+                                        const message = data.data;
+                                        receivePrivate(message)
+                                    } else {
+                                        alert(data.message)
+                                    }
+                                });
 
-                            // Subscribe group chat channel
-                            stompClient.subscribe(SUBSCRIBE.groupChannel, function (data) {
-                                data = JSON.parse(data.body);
-                                if (data.code === CODE.success) {
-                                    const message = data.data;
-                                    receiveGroup(message)
-                                } else {
-                                    alert(data.message)
-                                }
-                            });
+                                // Subscribe group chat channel
+                                stompClient.subscribe(SUBSCRIBE.groupChannel, function (data) {
+                                    data = JSON.parse(data.body);
+                                    if (data.code === CODE.success) {
+                                        const message = data.data;
+                                        receiveGroup(message)
+                                    } else {
+                                        alert(data.message)
+                                    }
+                                });
 
-                            // Subscribe notify channel
-                            stompClient.subscribe(SUBSCRIBE.notifyChannel, function (data) {
-                                data = JSON.parse(data.body);
-                                if (data.code === CODE.success) {
-                                    const message = data.data;
-                                    receiveNotify(message)
-                                } else {
-                                    alert(data.message)
-                                }
-                            });
-                        }else{
-                            console.log('not connected')
-                            console.log(xhr.response)
-                            failure(xhr.response)
+                                // Subscribe notify channel
+                                stompClient.subscribe(SUBSCRIBE.notifyChannel, function (data) {
+                                    data = JSON.parse(data.body);
+                                    if (data.code === CODE.success) {
+                                        const message = data.data;
+                                        receiveNotify(message)
+                                    } else {
+                                        alert(data.message)
+                                    }
+                                });
+                            } else {
+                                console.log('not connected')
+                                failure(xhr.response)
+                            }
                         }
                     }
                 }
