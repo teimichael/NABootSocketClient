@@ -19,9 +19,25 @@ function connect() {
             $('#my-uuid').val(data.data.uuid);
             setConnected(true);
             console.log('Connected');
+            NABootSocket.getConversationList(data.data.uuid,{
+                onSuccess: function (data) {
+                    console.log(data)
+                },
+                onFailure: function (data) {
+                    console.log(data)
+                }
+            })
+            NABootSocket.getHistoryRecordList('d198b133-62b3-4e68-973d-efdf97e57a94',{
+                onSuccess: function (data) {
+                    console.log(data)
+                },
+                onFailure: function (data) {
+                    console.log(data)
+                }
+            })
         },
-        onFailure: function (data) {
-            alert(data.message);
+        onFailure: function (message) {
+            alert(message);
             disconnect();
         },
         onReceivedPrivate: function (message) {

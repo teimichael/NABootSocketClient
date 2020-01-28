@@ -13,7 +13,9 @@
 
     const GLOBAL = {
         loginURL: SERVER + '/access/login',
-        socketURL: SERVER + '/nabootsocket'
+        socketURL: SERVER + '/nabootsocket',
+        conversationListURL: SERVER + '/conversation/get/list/',
+        historyRecordListURL: SERVER + '/history/get/'
     };
 
     const SUBSCRIBE = {
@@ -129,14 +131,60 @@
                                     }
                                 });
                             } else {
-                                console.log('not connected')
-                                failure(xhr.response)
+                                console.log('not connect')
+                                failure(xhr.response.message)
                             }
                         }
                     }
                 }
 
             })
+        },
+        getConversationList: function (NA_uuid) {
+            let success = arguments[1].onSuccess || function() {}
+            let failure = arguments[1].onFailure || function() {}
+
+            let xhr = createxmlHttpRequest()
+            xhr.open("GET",GLOBAL.conversationListURL+NA_uuid,true)
+            xhr.responseType='json'
+            xhr.send()
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        console.log(xhr.response)
+                        if (xhr.response.code === CODE.success) {
+                            console.log('get conversation list')
+                            success(xhr.response.data)
+                        }else {
+                            console.log('not get conversation list')
+                            failure(xhr.response.message)
+                        }
+                    }
+                }
+            }
+        },
+        getHistoryRecordList: function (NA_uuid) {
+            let success = arguments[1].onSuccess || function() {}
+            let failure = arguments[1].onFailure || function() {}
+
+            let xhr = createxmlHttpRequest()
+            xhr.open("GET",GLOBAL.historyRecordListURL+NA_uuid+'?page=0&size=20',true)
+            xhr.responseType='json'
+            xhr.send()
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        console.log(xhr.response)
+                        if (xhr.response.code === CODE.success) {
+                            console.log('get historyRecord list')
+                            success(xhr.response.data)
+                        }else {
+                            console.log('not get historyRecord list')
+                            failure(xhr.response.message)
+                        }
+                    }
+                }
+            }
         }
     }
 
